@@ -1,110 +1,95 @@
 #!/bin/bash
 
-echoLine() {
-	echo "==============================================="
-}
+BASHRC="~/.bashrc"
 
-isBaseDebian() {
-	local OS=$1;
-
-	if [[ $OS = "Debian" || $OS = "Ubuntu" || $OS = "Mint" ]]
-	then
-		echo "true";
-	else
-		echo "false";
-	fi
-}
-
-isBaseCentOs() {
-	local OS=$1;
-
-	if [[ $OS = "CentOS" || $OS = "RedHat" || $OS = "Fedora" ]]
-	then
-		echo "true";
-	else
-		echo "false";
-	fi
-}
-
-echoBeginInstall() {
-	local OS=$1;
-
-	echoLine;
-    echo "Installing packages on $OS"
-    echoLine;
-}
-
-echoErrorOsNotDetected() {
-	echo "OS NOT DETECTED, couldn't install packages";
-}
-
-getOs() {
-	local NAME=$(cat /etc/*release | grep ^NAME=);
-	NAME=${NAME:5};
-	echo `echo ${NAME} | awk '{print $1}' | sed 's/\"//g'`
-}
-
-install() {
-	local PACKAGES=$1;
-	local OS=$(getOs);
-
-	if [[ $(isBaseDebian $OS) = "true" ]]
-	then
-		echoBeginInstall $OS;
-	elif [[ $(isBaseCentOs $OS) = "true" ]]
-	then
-		echoBeginInstall $OS;
-	else
-		echoErrorOsNotDetected;
-		exit 1;
-	fi
+installDefaultUtilsAndTools () {
+	apt-get install -y apt-transport-https \
+		ca-certificates \
+		curl \
+		wget \
+		make \
+		build-essential \
+		snapd \
+		libssl-dev \
+		python3 \
+		python3-setuptools \
+		python3-software-properties \
+		git \
+		nano \
+		htop \
+		terminator \
+		nautilus
 }
 
 # generation ssh key
-genSsh() {
+genSsh () {
     mkdir -p ~/.ssh
     ssh-keygen
 }
 
-getPackages() {
-	echo "apt-transport-https \
-    ca-certificates \
-    gnupg \
-    gnupg2 \
-    curl \
-    software-properties-common \
-    wget \
-    make \
-    build-essential \
-    dirmngr \
-    cpp \
-    gpp \
-    g++ \
-    snap \
-    snapd \
-    dialog \
-    devscripts \
-    equivs \
-    gdebi-core \
-    libssl-dev \
-    python3 \
-    python3-setuptools \
-    python3-software-properties \
-    git \
-    nano \
-    htop \
-    terminator \
-    nautilus \
-    default-jre"
+addAliases() {
+	if [ -f $BASHRC ] ; then
+		$(
+			alias dc="docker-compose"
+			alias d="docker"
+			alias d="docker"
+			alias dc="docker-compose"
+			alias ga="git add "
+			alias gb="git branch "
+			alias gc="git commit"
+			alias gcm="git commit -m "
+			alias gd="git diff"
+			alias go="git checkout "
+			alias gst="git status "
+			alias gh="git cherry -v origin/master"
+			alias ghw="git cherry -v origin/master | wc -l"
+			alias g="git "
+		 ) >> $BASHRC
+
+		. $BASHRC
+	else
+		echo "Problem! Dir $BASHRC not found!"
+	fi
 }
 
-addAliases() {
-	if [ -f /etc/bashrc ] ; then
-		{
-			echo 'dc="docker-compose"'
-			echo 'd="docker"'
-		} > /etc/bashrc
+installOpenJDK () {
+	sudo add-apt-repository ppa:openjdk-r/ppa \
+		&& sudo apt-get update -q \
+		&& sudo apt install -y openjdk-11-jdk
+}
 
-		. /etc/bashrc
-	fi
+installGitWithTools () {
+	sudo apt-get install -y git
+
+	$(
+		[core]
+			autocrlf = input
+			safecrlf = true
+			quotePath = off
+		[alias]
+			co = checkout
+			ci = commit
+			st = status
+			br = branch
+			hist = log —pretty=format:\"%h %ad | %s%d [%an]\" —graph —date=short
+			type = cat-file -t
+			dump = cat-file -p
+	) >> ~/.gitconfig
+
+	$(
+		GIT_PROMPT_ONLY_IN_REPO=1
+		GIT_PROMPT_THEME=Single_line_Ubuntu
+		source ~/.bash-git-prompt/gitprompt.sh
+	 ) >> $BASHRC
+}
+
+installDockerWithTools () {
+
+	# install dry
+	curl -sSf https://moncho.github.io/dry/dryup.sh | sudo sh
+	sudo chmod 755 /usr/local/bin/dry
+}
+
+installPythonWithTools () {
+
 }

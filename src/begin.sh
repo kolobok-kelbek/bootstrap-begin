@@ -3,8 +3,10 @@ set -e
 
 source $(dirname $0)/functions.sh
 
-addAliases
+installDefaultUtilsAndTools()
 
-# install
+genSsh()
+
+addAliases()
 
 exit 0

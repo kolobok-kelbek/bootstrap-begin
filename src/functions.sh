@@ -32,7 +32,6 @@ addAliases() {
 		$(
 			alias dc="docker-compose"
 			alias d="docker"
-			alias d="docker"
 			alias dc="docker-compose"
 			alias ga="git add "
 			alias gb="git branch "
@@ -44,6 +43,7 @@ addAliases() {
 			alias gh="git cherry -v origin/master"
 			alias ghw="git cherry -v origin/master | wc -l"
 			alias g="git "
+			alias dclr="docker image prune && docker volume prune"
 		 ) >> $BASHRC
 
 		. $BASHRC
@@ -67,13 +67,26 @@ installGitWithTools () {
 			safecrlf = true
 			quotePath = off
 		[alias]
+			f = fetch --all -p
+			r = rebase
+			st = status -sbu
 			co = checkout
 			ci = commit
-			st = status
+			cp = commit --no-edit --amend
 			br = branch
+			ri = rebase -i
+			cb = "!f() { BRANCH=`git rev-parse --abbrev-ref HEAD`; git commit -m \"$BRANCH $1\"; }; f"
+			om = cherry -v origin/master
+			lo = log --oneline
+			bm = cherry -v HEAD origin/master
+			lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commits
+			caa = "!f() { git add . && git commit --amend --no-edit && git push --force-with-lease; }; f"
+			oml = "!f() { git cherry -v origin/master | wc -l; }; f"
+			fush = push --force-with-lease
 			hist = log —pretty=format:\"%h %ad | %s%d [%an]\" —graph —date=short
 			type = cat-file -t
 			dump = cat-file -p
+			ldiff = diff origin/master
 	) >> ~/.gitconfig
 
 	$(

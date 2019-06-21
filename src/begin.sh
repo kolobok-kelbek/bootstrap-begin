@@ -25,22 +25,23 @@ if ! [[ -f ${BASHRC} ]] ; then
     touch ${BASHRC}
 fi
 
-$(
-    alias dev="cd ~/Dev"
-    alias dc="docker-compose"
-    alias d="docker"
-    alias ga="git add "
-    alias gb="git branch "
-    alias gc="git commit"
-    alias gcm="git commit -m "
-    alias gd="git diff"
-    alias go="git checkout "
-    alias gst="git status "
-    alias gh="git cherry -v origin/master"
-    alias ghw="git cherry -v origin/master | wc -l"
-    alias g="git "
-    alias dclr="docker image prune && docker volume prune"
-) >> ${ALIASES}
+cat <<EOF >> ${ALIASES}
+
+alias dev="cd ~/Dev"
+alias dc="docker-compose"
+alias d="docker"
+alias ga="git add "
+alias gb="git branch "
+alias gc="git commit"
+alias gcm="git commit -m "
+alias gd="git diff"
+alias go="git checkout "
+alias gst="git status "
+alias gh="git cherry -v origin/master"
+alias ghw="git cherry -v origin/master | wc -l"
+alias g="git "
+alias dclr="docker image prune && docker volume prune"
+EOF
 
 
 #################################
@@ -49,39 +50,48 @@ $(
 
 apt-get install -y git
 
-$(
-    [core]
-        autocrlf = input
-        safecrlf = true
-        quotePath = off
-    [alias]
-        f = fetch --all -p
-        r = rebase
-        st = status -sbu
-        co = checkout
-        ci = commit
-        cp = commit --no-edit --amend
-        br = branch
-        ri = rebase -i
-        cb = "!f() { BRANCH=`git rev-parse --abbrev-ref HEAD`; git commit -m \"$BRANCH $1\"; }; f"
-        om = cherry -v origin/master
-        lo = log --oneline
-        bm = cherry -v HEAD origin/master
-        lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commits
-        caa = "!f() { git add . && git commit --amend --no-edit && git push --force-with-lease; }; f"
-        oml = "!f() { git cherry -v origin/master | wc -l; }; f"
-        fush = push --force-with-lease
-        hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
-        type = cat-file -t
-        dump = cat-file -p
-        ldiff = diff origin/master
-) >> ~/.gitconfig
+cat <<EOF >> ~/.gitconfig
+[core]
+    autocrlf = input
+    safecrlf = true
+    quotePath = off
+[alias]
+    f = fetch --all -p
+    r = rebase
+    st = status -sbu
+    co = checkout
+    ci = commit
+    cp = commit --no-edit --amend
+    br = branch
+    ri = rebase -i
+    cb = "!f() { BRANCH=`git rev-parse --abbrev-ref HEAD`; git commit -m \"$BRANCH $1\"; }; f"
+    om = cherry -v origin/master
+    lo = log --oneline
+    bm = cherry -v HEAD origin/master
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commits
+    caa = "!f() { git add . && git commit --amend --no-edit && git push --force-with-lease; }; f"
+    oml = "!f() { git cherry -v origin/master | wc -l; }; f"
+    fush = push --force-with-lease
+    hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+    type = cat-file -t
+    dump = cat-file -p
+    ldiff = diff origin/master
+EOF
 
-$(
+#################################
+#          GIT-PROMT            #
+#################################
+
+git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
+
+cat <<EOF >> $BASHRC
+
+if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
     GIT_PROMPT_ONLY_IN_REPO=1
     GIT_PROMPT_THEME=Single_line_Ubuntu
-    source ~/.bash-git-prompt/gitprompt.sh
-) >> $BASHRC
+    source $HOME/.bash-git-prompt/gitprompt.sh
+fi
+EOF
 
 
 #################################
@@ -97,6 +107,12 @@ echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${BASH_PYENV}
 echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ${BASH_PYENV}
 echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ${BASH_PYENV}
 
+cat <<EOF >> $BASHRC
+
+if [ -f "$HOME/.bash_pyenv" ]; then
+    source $HOME/.bash_pyenv
+fi
+EOF
 
 #################################
 #            DEV-ENV            #
@@ -124,6 +140,6 @@ fi
 #           BOOTSTRAP           #
 #################################
 
-git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
-pip3 install -r requirements.pip
-python3 ./main.py
+#git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
+#pip3 install -r requirements.pip
+#python3 ./main.py

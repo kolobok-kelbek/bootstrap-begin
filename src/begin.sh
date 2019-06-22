@@ -101,7 +101,7 @@ EOF
 PYENV=~/.pyenv
 BASH_PYENV=~/.bash_pyenv
 
-git clone https://github.com/pyenv/pyenv.git ${PYENV}
+curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 
 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${BASH_PYENV}
 echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ${BASH_PYENV}
@@ -140,6 +140,6 @@ fi
 #           BOOTSTRAP           #
 #################################
 
-#git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
-#pip3 install -r requirements.pip
-#python3 ./main.py
+git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
+pip3 install -r requirements.pip
+python3 ./main.py

@@ -101,6 +101,9 @@ EOF
 PYENV=~/.pyenv
 BASH_PYENV=~/.bash_pyenv
 
+# dependencies for python 3.7 and more versions
+apt-get install -y zliblg-dev libffi-dev
+
 curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 
 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${BASH_PYENV}

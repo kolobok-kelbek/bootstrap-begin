@@ -18,7 +18,7 @@ apt-get install -y apt-transport-https \
 		build-essential \
 		snapd \
 		libssl-dev \
-		nano \
+		neovim \
 		htop
 
 if ! [[ -f ${BASHRC} ]] ; then
@@ -28,6 +28,8 @@ fi
 cat <<EOF >> ${ALIASES}
 
 alias dev="cd ~/Dev"
+alias devp="cd ~/Dev/projects"
+alias devs="cd ~/Dev/sandbox"
 alias dc="docker-compose"
 alias d="docker"
 alias ga="git add "
@@ -35,12 +37,13 @@ alias gb="git branch "
 alias gc="git commit"
 alias gcm="git commit -m "
 alias gd="git diff"
-alias go="git checkout "
+alias gg="git checkout "
 alias gst="git status "
 alias gh="git cherry -v origin/master"
 alias ghw="git cherry -v origin/master | wc -l"
 alias g="git "
-alias dclr="docker image prune && docker volume prune"
+alias dprune="docker container prune && docker image prune && docker volume prune && docker network prune"
+alias dclean="if ! [ -z $(docker ps -q) ]; then docker stop $(docker ps -q); fi && if ! [ -z $(docker ps -qa) ]; then docker rm $(docker ps -qa); fi && if ! [ -z $(docker images -q) ]; then docker rmi $(docker images -q) -f; fi"
 EOF
 
 
@@ -90,30 +93,6 @@ if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
     GIT_PROMPT_ONLY_IN_REPO=1
     GIT_PROMPT_THEME=Single_line_Ubuntu
     source $HOME/.bash-git-prompt/gitprompt.sh
-fi
-EOF
-
-
-#################################
-#            PYENV              #
-#################################
-
-PYENV=~/.pyenv
-BASH_PYENV=~/.bash_pyenv
-
-# dependencies for python 3.7 and more versions
-apt-get install -y zliblg-dev libffi-dev
-
-curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${BASH_PYENV}
-echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ${BASH_PYENV}
-echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ${BASH_PYENV}
-
-cat <<EOF >> $BASHRC
-
-if [ -f "$HOME/.bash_pyenv" ]; then
-    source $HOME/.bash_pyenv
 fi
 EOF
 

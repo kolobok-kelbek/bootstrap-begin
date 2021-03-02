@@ -1,2 +1,2 @@
 # bootstrap-begin
-Скрипт стартовой настройки системы Ubuntu.
+Settings script for Ubuntu..

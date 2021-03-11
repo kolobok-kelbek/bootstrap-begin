@@ -1,2 +1,2 @@
 # bootstrap-begin
-Settings script for Ubuntu..
+Settings script for Ubuntu.

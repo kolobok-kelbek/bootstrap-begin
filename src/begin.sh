@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -e
-
 
 #################################
 #            BASE               #
@@ -9,21 +8,23 @@ set -e
 
 BASHRC=~/.bashrc
 ALIASES=~/.bash_aliases
+SSH_DIR=~/.ssh
 
-apt-get install -y apt-transport-https \
-		ca-certificates \
-		curl \
-		wget \
-		make \
-		build-essential \
-		snapd \
-		libssl-dev \
-		neovim \
-		htop
+base() {
+    apt-get install -y apt-transport-https \
+            ca-certificates \
+            curl \
+            wget \
+            make \
+            build-essential \
+            snapd \
+            libssl-dev \
+            neovim \
+            htop
 
-if ! [[ -f ${BASHRC} ]] ; then
-    touch ${BASHRC}
-fi
+    if ! [[ -f ${BASHRC} ]] ; then
+        touch ${BASHRC}
+    fi
 
 cat <<EOF >> ${ALIASES}
 
@@ -45,13 +46,14 @@ alias g="git "
 alias dprune="docker container prune && docker image prune && docker volume prune && docker network prune"
 alias dclean="if ! [ -z $(docker ps -q) ]; then docker stop $(docker ps -q); fi && if ! [ -z $(docker ps -qa) ]; then docker rm $(docker ps -qa); fi && if ! [ -z $(docker images -q) ]; then docker rmi $(docker images -q) -f; fi"
 EOF
-
+}
 
 #################################
 #             GIT               #
 #################################
 
-apt-get install -y git
+git() {
+    apt-get install -y git
 
 cat <<EOF >> ~/.gitconfig
 [core]
@@ -80,12 +82,14 @@ cat <<EOF >> ~/.gitconfig
     dump = cat-file -p
     ldiff = diff origin/master
 EOF
+}
 
 #################################
 #          GIT-PROMT            #
 #################################
 
-git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
+git_prompt() {
+    git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt --depth=1
 
 cat <<EOF >> $BASHRC
 
@@ -95,33 +99,122 @@ if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
     source $HOME/.bash-git-prompt/gitprompt.sh
 fi
 EOF
+}
 
 #################################
 #            DEV-ENV            #
 #################################
 
-DEV_DIR=~/Dev
-SANDBOX_DIR=${DEV_DIR}/sandbox
-PROJECTS_DOR=${DEV_DIR}/projects
-TMP_DIR=${DEV_DIR}/tmp
+dev_env() {
+    DEV_DIR=~/Dev
+    SANDBOX_DIR=${DEV_DIR}/sandbox
+    PROJECTS_DOR=${DEV_DIR}/projects
+    TMP_DIR=${DEV_DIR}/tmp
 
-if ! [[ -d ${SANDBOX_DIR} ]] ; then
-    mkdir -p ${SANDBOX_DIR}
-fi
+    if ! [[ -d ${SANDBOX_DIR} ]] ; then
+        mkdir -p ${SANDBOX_DIR}
+    fi
 
-if ! [[ -d ${PROJECTS_DOR} ]] ; then
-    mkdir -p ${PROJECTS_DOR}
-fi
+    if ! [[ -d ${PROJECTS_DOR} ]] ; then
+        mkdir -p ${PROJECTS_DOR}
+    fi
 
-if ! [[ -d ${TMP_DIR} ]] ; then
-    mkdir -p ${TMP_DIR}
-fi
+    if ! [[ -d ${TMP_DIR} ]] ; then
+        mkdir -p ${TMP_DIR}
+    fi
+}
 
+#################################
+#             SSH               #
+#################################
+
+ssh_gen() {
+    if ! [[ -d ${SSH_DIR} ]]; then
+        mkdir ${SSH_DIR}
+    fi
+
+    ssh-keygen -t rsa -f ${SSH_DIR}/id_rsa -q -P "" \
+        && cat ${SSH_DIR}/id_rsa.pub
+}
 
 #################################
 #           BOOTSTRAP           #
 #################################
 
-git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
-pip3 install -r requirements.pip
-python3 ./main.py
+bootstrap() {
+    git clone git@github.com:kolobok-kelbek/bootstrap.git ${SANDBOX_DIR}
+    pip3 install -r requirements.pip
+    python3 ./main.py
+}
+
+menuItems=(base git git_prompt dev_env ssh_gen bootstrap all)
+command=''
+
+inArray()
+{
+    local e
+    for e in "${menuItems[@]}"; do
+        [[ "$e" == "$1" ]] && command=$e && return 0;
+    done
+    return 1
+}
+
+if inArray $1 && [[ -n $command ]]
+then
+    echo "executing command - $command"
+    $command
+    echo "success"
+    exit
+else
+    if [[ -n $1 ]]
+    then
+        echo "unknown command - $1"
+        exit
+    fi;
+fi;
+
+count=${#menuItems[@]}
+
+cursor=0
+
+printMenu() {
+	for ((i=0; i<$count; i++))
+	do
+		item=${menuItems[$i]}
+
+		if [[ $cursor -eq $i ]]
+		then
+    		echo -e " \e[33m->\e[0m $item"
+		else
+			echo "    $item"
+		fi
+	done
+}
+
+while true
+do
+	clear
+	echo -e "\e[32mhelp\e[0m: \e[33mq\e[0m - exit, \e[33mj\e[0m - down, \e[33mk\e[0m - up, \e[33ml\e[0m - select\n"
+	printMenu
+
+	read -n 1 key
+	
+	if [[ $key = "q" ]]
+	then
+		clear
+		exit
+	elif [[ $key = "j" && $cursor -lt $((count-1)) ]]
+	then
+		cursor=$((cursor+1))
+	elif [[ $key = "k" && $cursor -gt 0 ]]
+	then
+		cursor=$((cursor-1))
+	elif [[ $key = "l" ]]
+	then
+		clear
+
+		bash $0 ${menuItems[$cursor]}
+        echo "press any button for continue"
+		read -n 1
+	fi
+done
